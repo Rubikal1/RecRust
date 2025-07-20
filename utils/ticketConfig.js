@@ -94,7 +94,7 @@ module.exports = [
   {
     id: 'kit',
     label: 'Kit Support',
-    style: 'Success', // Greens
+    style: 'Success', // Greenss
     categoryName: 'Kit Support Tickets',
     modalTitle: 'Sleepless – Kit Support',
     fields: [
