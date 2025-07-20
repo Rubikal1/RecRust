@@ -14,7 +14,7 @@ const ARCHIVE_CATEGORY_IDS = [
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('send')
-    .setDescription('Send a DM to the ticket opener if ticket is open')
+    .setDescription('Send a DM to the ticket opener if ticket is open and post in ticket channel')
     .addStringOption(option =>
       option.setName('message')
         .setDescription('Message to send')
@@ -51,9 +51,14 @@ module.exports = {
 
     try {
       const user = await interaction.client.users.fetch(userId);
-const senderUser = await interaction.client.users.fetch(interaction.user.id);
-await user.send(`**${senderUser.username.toLowerCase()}**: ${messageToSend}`);
-      await interaction.reply({ content: `✅ Message sent to <@${userId}> successfully!`, ephemeral: true });
+      const senderUser = await interaction.client.users.fetch(interaction.user.id);
+      // DM the user
+      await user.send(`**${senderUser.username.toLowerCase()}**: ${messageToSend}`);
+      // Post in the staff ticket channel as well
+      await channel.send({
+        content: `**[DM Sent to <@${userId}>]**\n**${senderUser.username}:** ${messageToSend}`
+      });
+      await interaction.reply({ content: `✅ Message sent to <@${userId}> and posted in this ticket.`, ephemeral: true });
     } catch (error) {
       await interaction.reply({ content: `❌ Failed to send message: ${error.message}`, ephemeral: true });
     }

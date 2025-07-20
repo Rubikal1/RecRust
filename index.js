@@ -116,8 +116,9 @@ if (!ticketEntry) {
   const channel = await client.channels.fetch(ticketData.channelId).catch(() => null);
   if (!channel) return;
 
-  // Skip if channel archived
-  if (ARCHIVE_CATEGORY_IDS.includes(channel.parentId)) return;
+  // Strict check: if channel is archived or closed, prevent DM forwarding
+if (!channel || ARCHIVE_CATEGORY_IDS.includes(channel.parentId) || channel.name.startsWith('closed-')) return;
+
 
   // Forward message content + attachments to ticket channel
 channel.send({

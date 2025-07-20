@@ -306,19 +306,23 @@ await fullyCloseTicket(interaction.channel, archiveTicketId);
   // --- Build styled staff embed ---
   const status = STATUS_META.open;
   const typeEmoji = TYPE_EMOJIS[typeId] || '';
-  const staffEmbed = new EmbedBuilder()
-    .setTitle(`${typeEmoji} ${config.label} Ticket`)
-    .setDescription(
-      `**Ticket ID:** \`${ticketId}\`\n` +
-      `**Type:** ${config.label}\n` +
-      `**Assigned to:** Unclaimed` +
-      (typeId === 'cheater'
-        ? '\n\n*Make sure you F7 report the hackers in-game!*'
-        : '')
-    )
-    .setColor(TYPE_COLORS[typeId] || 0x747f8d)
-    .setFooter({ text: 'Sleepless Tickets', iconURL: ICON_URL })
-    .setTimestamp();
+  const user = await interaction.client.users.fetch(interaction.user.id);
+
+const staffEmbed = new EmbedBuilder()
+  .setTitle(`${typeEmoji} ${config.label} Ticket`)
+  .setDescription(
+    `**Ticket ID:** \`${ticketId}\`\n` +
+    `**Type:** ${config.label}\n` +
+    `**Submitted by:** <@${user.id}> (${user.tag})\n` +
+    `**Assigned to:** Unclaimed` +
+    (typeId === 'cheater'
+      ? '\n\n*Make sure you F7 report the hackers in-game!*'
+      : '')
+  )
+  .setColor(TYPE_COLORS[typeId] || 0x747f8d)
+  .setFooter({ text: 'Sleepless Tickets', iconURL: ICON_URL })
+  .setTimestamp();
+
 
   staffEmbed.addFields({ name: "Status", value: `${status.emoji} ${status.text}`, inline: false });
   for (const field of config.fields) {
