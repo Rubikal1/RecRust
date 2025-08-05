@@ -151,11 +151,10 @@ if (
 
     const reason = interaction.fields.getTextInputValue('archive_reason');
 
-    // Move channel
-    await interaction.channel.setParent(archiveCategoryId);
+// Move channel to archive category and rename it
+await interaction.channel.setParent(archiveCategoryId);
+await interaction.channel.setName(`Archived - Ticket${archiveTicketId}`).catch(console.error);
 
-// Rename to closed-TICKETID
-await interaction.channel.setName(`closed-${archiveTicketId.toLowerCase()}`);
 
 // Fully close (removes buttons & updates embed)
 await fullyCloseTicket(interaction.channel, archiveTicketId);
