@@ -14,7 +14,8 @@ module.exports = {
 
   async execute(interaction) {
     // Only admins can run this
-    if (!interaction.member.permissions.has('Administrator')) {
+    const { PermissionsBitField } = require('discord.js');
+if (!interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
       return interaction.reply({
         content: '❌ You must be an administrator to use this.',
         ephemeral: true,

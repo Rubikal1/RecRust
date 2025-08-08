@@ -38,8 +38,10 @@ const STATUS_META = {
 };
 
 function getTicketIdFromChannelName(name) {
-  return name.replace(/^claimed-|^pending-|^/, '').toUpperCase();
+  // Strip known prefixes; ticket IDs are numeric so no need toUpperCase
+  return name.replace(/^(?:claimed-|pending-)/, '');
 }
+
 
 async function sendUserCloseDM(ticketId, type, userId, archivedType, reason) {
   let ticketLabel = type.charAt(0).toUpperCase() + type.slice(1);
@@ -282,20 +284,50 @@ module.exports = async function handleButton(interaction) {
     }
   }
 
-  // Pending Approval
-  if (interaction.customId === `pending_${ticketId}`) {
-    try {
-      const newName = `pending-${ticketId.toLowerCase()}`;
-      await channel.setName(newName);
-      await channel.send(`<@&${STAFF_ROLE_ID}> This ticket is waiting for approval!`);
-      log('Pending approval triggered. Channel renamed and staff pinged.');
-      await interaction.reply({ content: `Ticket marked as pending approval.`, ephemeral: true });
-    } catch (err) {
-      log('Error in pending approval: ' + err);
+// Pending Approval
+if (interaction.customId === `pending_${ticketId}`) {
+  try {
+    const newName = `pending-${ticketId.toLowerCase()}`;
+    await channel.setName(newName);
+
+    // Update embed "Status" to 🔴 Pending Approval and set Assigned line to Unclaimed
+    await setClaimStatus(channel, ticketId, "🔴", "Pending Approval");
+
+    // Rebuild main action row with Pending disabled to prevent spam
+    const row = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId(`claim_${ticketId}`)
+        .setLabel('Claim')
+        .setStyle(ButtonStyle.Success),
+      new ButtonBuilder()
+        .setCustomId(`close_${ticketId}`)
+        .setLabel('Close')
+        .setStyle(ButtonStyle.Danger),
+      new ButtonBuilder()
+        .setCustomId(`pending_${ticketId}`)
+        .setLabel('Pending Approval')
+        .setStyle(ButtonStyle.Primary)
+        .setDisabled(true),
+      new ButtonBuilder()
+        .setCustomId(`transfer_${ticketId}`)
+        .setLabel('Transfer')
+        .setStyle(ButtonStyle.Secondary)
+    );
+
+    // Update the clicked message’s components (not a new ephemeral reply)
+    await interaction.update({ components: [row] });
+
+    await channel.send(`<@&${STAFF_ROLE_ID}> This ticket is waiting for approval!`);
+    log('Pending approval triggered. Channel renamed, embed updated, pending disabled, and staff pinged.');
+  } catch (err) {
+    log('Error in pending approval: ' + err);
+    if (!interaction.deferred && !interaction.replied) {
       await interaction.reply({ content: '❌ Something went wrong setting pending.', ephemeral: true });
     }
-    return;
   }
+  return;
+}
+
 
   // Transfer...
   if (interaction.customId === `transfer_${ticketId}`) {

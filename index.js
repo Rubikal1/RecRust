@@ -132,10 +132,29 @@ client.once('ready', () => {
 });
 
 // --- Auto Reminder System for Tickets ---
-const TICKET_REMINDER_INTERVAL = 60 * 1000; // 1 min check interval
-const UNCLAIMED_THRESHOLD = 5 * 60 * 1000; // 5 minutes (adjust as needed)
-const PENDING_THRESHOLD = 20 * 60 * 1000; // 20 minutes
+const REMINDER_INTERVAL_MS = 60 * 1000; // check every 1 min
+const REM_THRESHOLDS_MS = [5 * 60 * 1000, 30 * 60 * 1000, 60 * 60 * 1000]; // 5m, 30m, 1h
 const STAFF_ROLE_ID = '1384325547097849956';
+
+// Helpers: store reminder stage in channel topic as "[rem:N]"
+function getReminderStageFromTopic(topic) {
+  if (!topic) return 0;
+  const m = topic.match(/\[rem:(\d)\]/);
+  const n = m ? parseInt(m[1], 10) : 0;
+  return Number.isFinite(n) ? n : 0;
+}
+async function setReminderStageInTopic(channel, stage) {
+  try {
+    const current = channel.topic || '';
+    const next = current.includes('[rem:')
+      ? current.replace(/\[rem:\d\]/, `[rem:${stage}]`)
+      : (current ? `${current} [rem:${stage}]` : `[rem:${stage}]`);
+    if (next !== current) await channel.setTopic(next);
+  } catch (e) {
+    console.warn('[Reminders] Unable to set topic for channel', channel.id, e?.message || e);
+  }
+}
+
 setInterval(async () => {
   let userMap = {};
   if (fs.existsSync(USER_MAP_PATH)) {
@@ -144,35 +163,54 @@ setInterval(async () => {
   const now = Date.now();
 
   for (const [ticketId, data] of Object.entries(userMap)) {
-    // Fetch channel
     const channel = await client.channels.fetch(data.channelId).catch(() => null);
     if (!channel) continue;
-    // Skip archived
+
+    // Skip archived channels
     if (ARCHIVE_CATEGORY_IDS.includes(channel.parentId)) continue;
 
-    // Get last message in channel for claim/pending status (inefficient but works)
-    const msgs = await channel.messages.fetch({ limit: 10 });
-    const lastBotMsg = Array.from(msgs.values()).find(m => m.author.id === client.user.id);
-    const embed = lastBotMsg?.embeds?.[0];
+    // Determine status: Pending via name; Unclaimed via embed text
+    const isPending = channel.name.startsWith('pending-');
 
-    // Unclaimed reminder
-    if (embed && embed.description && embed.description.includes('Assigned to:** Unclaimed')) {
-      // Check for previous reminders (avoid spamming)
-      if (!channel.lastUnclaimedReminder || now - (channel.lastUnclaimedReminder || 0) > UNCLAIMED_THRESHOLD) {
-        channel.lastUnclaimedReminder = now;
-        await channel.send(`<@&${STAFF_ROLE_ID}> ⚠️ This ticket has not been claimed after 5 minutes!`);
-      }
-    }
+    // Fetch a handful of recent messages to find the staff embed
+    const msgs = await channel.messages.fetch({ limit: 20 }).catch(() => null);
+    const botMsg = msgs ? Array.from(msgs.values()).find(m => m.author?.id === client.user.id && m.embeds?.length) : null;
+    const embed = botMsg?.embeds?.[0];
+    const desc = embed?.description || '';
+    const isUnclaimed = /\*\*Assigned to:\*\*\s*Unclaimed/i.test(desc);
 
-    // Pending reminder
-    if (channel.name.startsWith('pending-')) {
-      if (!channel.lastPendingReminder || now - (channel.lastPendingReminder || 0) > PENDING_THRESHOLD) {
-        channel.lastPendingReminder = now;
-        await channel.send(`<@&${STAFF_ROLE_ID}> ⏳ This ticket has been pending approval for 20 minutes!`);
+    // If neither pending nor unclaimed, no reminders needed
+    if (!isPending && !isUnclaimed) continue;
+
+    // Elapsed since channel creation
+    const createdAt = channel.createdTimestamp || (Date.parse(channel.createdAt) || now);
+    const elapsed = now - createdAt;
+
+    // Compute which threshold we're at: 0 (none), 1 (5m), 2 (30m), 3 (1h)
+    let targetStage = 0;
+    if (elapsed >= REM_THRESHOLDS_MS[0]) targetStage = 1;
+    if (elapsed >= REM_THRESHOLDS_MS[1]) targetStage = 2;
+    if (elapsed >= REM_THRESHOLDS_MS[2]) targetStage = 3;
+
+    const currentStage = getReminderStageFromTopic(channel.topic);
+    if (targetStage > currentStage) {
+      // Send the appropriate reminder once per stage
+      try {
+        if (targetStage === 1) {
+          await channel.send(`<@&${STAFF_ROLE_ID}> ⚠️ This ticket has not been handled for **5 minutes** (${isPending ? 'pending approval' : 'unclaimed'}).`);
+        } else if (targetStage === 2) {
+          await channel.send(`<@&${STAFF_ROLE_ID}> ⏰ **30 minutes** elapsed and this ticket is still ${isPending ? 'pending' : 'unclaimed'}. Please take action.`);
+        } else if (targetStage === 3) {
+          await channel.send(`<@&${STAFF_ROLE_ID}> ⛳ **1 hour** elapsed — ticket remains ${isPending ? 'pending approval' : 'unclaimed'}. Prioritize this.`);
+        }
+      } catch (e) {
+        console.warn('[Reminders] Failed to send reminder in', channel.id, e?.message || e);
       }
+      await setReminderStageInTopic(channel, targetStage);
     }
   }
-}, TICKET_REMINDER_INTERVAL);
+}, REMINDER_INTERVAL_MS);
+
 
 
 client.login(process.env.TOKEN);

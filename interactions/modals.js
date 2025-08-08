@@ -153,7 +153,7 @@ if (
 
 // Move channel to archive category and rename it
 await interaction.channel.setParent(archiveCategoryId);
-await interaction.channel.setName(`Archived - Ticket${archiveTicketId}`).catch(console.error);
+await interaction.channel.setName(`archived-${archiveTicketId}`).catch(console.error);
 
 
 // Fully close (removes buttons & updates embed)
@@ -211,7 +211,7 @@ await fullyCloseTicket(interaction.channel, archiveTicketId);
     // Check if ticket's channel still exists and is not archived
     try {
       const ticketChannel = await interaction.client.channels.fetch(alreadyOpen[1].channelId);
-      const archivedCategories = Object.values(STAFF_ARCHIVE_CATEGORY_IDS);
+      const archivedCategories = Object.values(ARCHIVE_CATEGORY_IDS);
       if (ticketChannel && !archivedCategories.includes(ticketChannel.parentId)) {
         await interaction.reply({
           content: `❌ You already have an open ticket! Please close it before creating a new one. (Ticket ID: \`${alreadyOpen[0]}\`)`,
@@ -251,7 +251,7 @@ await fullyCloseTicket(interaction.channel, archiveTicketId);
   let staffServer, channel;
   try {
     staffServer = await interaction.client.guilds.fetch(STAFF_SERVER_ID);
-    const staffCategoryId = STAFF_CATEGORY_IDS[typeId] || STAFF_CATEGORY_IDS['general'];
+    const staffCategoryId = STAFF_CATEGORY_IDS[typeId === 'appeal' ? 'unban' : typeId] || STAFF_CATEGORY_IDS['general'];
     channel = await staffServer.channels.create({
       name: ticketId,
       type: ChannelType.GuildText,
