@@ -162,47 +162,65 @@ module.exports = async function handleButton(interaction) {
   }
 
   // Claim/Unclaim
-  if (interaction.customId === `claim_${ticketId}` || interaction.customId === `unclaim_${ticketId}`) {
+// Claim/Unclaim
+if (interaction.customId === `claim_${ticketId}` || interaction.customId === `unclaim_${ticketId}`) {
+  try {
+    // Avoid "Interaction Failed" by acknowledging immediately
+    await interaction.deferUpdate();
+
+    const claimed = interaction.customId.startsWith('claim_');
+    const newName = claimed ? `claimed-${ticketId.toLowerCase()}` : `${ticketId.toLowerCase()}`;
+
+    // Channel rename can be slow or permission-sensitive; wrap it
     try {
-      const claimed = interaction.customId.startsWith('claim_');
-      const newName = claimed ? `claimed-${ticketId.toLowerCase()}` : `${ticketId.toLowerCase()}`;
       await channel.setName(newName);
       log(`Channel renamed to ${newName}`);
-      const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-          .setCustomId(claimed ? `unclaim_${ticketId}` : `claim_${ticketId}`)
-          .setLabel(claimed ? 'Unclaim' : 'Claim')
-          .setStyle(claimed ? ButtonStyle.Secondary : ButtonStyle.Success),
-        new ButtonBuilder()
-          .setCustomId(`close_${ticketId}`)
-          .setLabel('Close')
-          .setStyle(ButtonStyle.Danger),
-        new ButtonBuilder()
-          .setCustomId(`pending_${ticketId}`)
-          .setLabel('Pending Approval')
-          .setStyle(ButtonStyle.Primary),
-        new ButtonBuilder()
-          .setCustomId(`transfer_${ticketId}`)
-          .setLabel('Transfer')
-          .setStyle(ButtonStyle.Secondary)
-      );
-      await interaction.update({ components: [row] });
-
-      await setClaimStatus(
-        channel,
-        ticketId,
-        claimed ? "🟡" : "🟢",
-        claimed ? "Claimed" : "Open",
-        claimed ? member.id : null
-      );
-      log(claimed ? `Ticket claimed by <@${member.id}>` : `Ticket unclaimed by <@${member.id}>`);
-      await channel.send(claimed ? `<@${member.id}> has claimed this ticket!` : `This ticket has now been unclaimed by <@${member.id}>!`);
-    } catch (err) {
-      log('Error in claim/unclaim: ' + err);
-      await interaction.reply({ content: '❌ Something went wrong updating claim state.', ephemeral: true });
+    } catch (renameErr) {
+      log('Channel rename failed (continuing): ' + renameErr?.message || renameErr);
+      // Continue even if rename fails so the interaction still succeeds
     }
-    return;
+
+    // Rebuild the main row reflecting the new state
+    const row = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId(claimed ? `unclaim_${ticketId}` : `claim_${ticketId}`)
+        .setLabel(claimed ? 'Unclaim' : 'Claim')
+        .setStyle(claimed ? ButtonStyle.Secondary : ButtonStyle.Success),
+      new ButtonBuilder()
+        .setCustomId(`close_${ticketId}`)
+        .setLabel('Close')
+        .setStyle(ButtonStyle.Danger),
+      new ButtonBuilder()
+        .setCustomId(`pending_${ticketId}`)
+        .setLabel('Pending Approval')
+        .setStyle(ButtonStyle.Primary),
+      new ButtonBuilder()
+        .setCustomId(`transfer_${ticketId}`)
+        .setLabel('Transfer')
+        .setStyle(ButtonStyle.Secondary)
+    );
+
+    // Edit the original message after deferring
+    await interaction.message.edit({ components: [row] }).catch(() => {});
+
+    // Update embed status + assignee
+    await setClaimStatus(
+      channel,
+      ticketId,
+      claimed ? "🟡" : "🟢",
+      claimed ? "Claimed" : "Open",
+      claimed ? member.id : null
+    );
+
+    log(claimed ? `Ticket claimed by <@${member.id}>` : `Ticket unclaimed by <@${member.id}>`);
+    await channel.send(claimed ? `<@${member.id}> has claimed this ticket!` : `This ticket has now been unclaimed by <@${member.id}>!`);
+  } catch (err) {
+    log('Error in claim/unclaim: ' + err);
+    // We've already deferred; a reply would error. Nothing else to do here.
   }
+  return;
+}
+
 
   // --- CLOSE/ARCHIVE - Show archive categories + Back button ---
   if (interaction.customId === `close_${ticketId}`) {
