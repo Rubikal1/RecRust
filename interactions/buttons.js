@@ -38,9 +38,9 @@ const STATUS_META = {
 };
 
 function getTicketIdFromChannelName(name) {
-  // Strip known prefixes; ticket IDs are numeric so no need toUpperCase
-  return name.replace(/^(?:claimed-|pending-)/, '');
+  return name.replace(/^(?:claimed-|pending-|archived-)/, '');
 }
+
 
 
 async function sendUserCloseDM(ticketId, type, userId, archivedType, reason) {

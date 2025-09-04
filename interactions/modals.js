@@ -189,6 +189,14 @@ if (
     if (targetUserId) {
       await sendUserCloseDM(archiveTicketId, ticketType, targetUserId, archiveType, reason);
     }
+// 8.5) Persist "closed" so DM relay stops forwarding
+userMap[archiveTicketId] = {
+  ...(userMap[archiveTicketId] || {}),
+  isClosed: true,
+  archivedType: archiveType,
+  closedAt: Date.now(),
+};
+fs.writeFileSync(USER_MAP_PATH, JSON.stringify(userMap, null, 2));
 
     // 9) Acks
     const pretty = archiveType.charAt(0).toUpperCase() + archiveType.slice(1);

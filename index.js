@@ -1,4 +1,5 @@
-const { Client, GatewayIntentBits, Partials, Collection } = require('discord.js');
+const { Client, GatewayIntentBits, Partials, Collection, ChannelType } = require('discord.js');
+
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
@@ -71,61 +72,63 @@ client.on('interactionCreate', async interaction => {
 
 // --- Forward user DMs to their open ticket channel ---
 const USER_MAP_PATH = path.join(__dirname, 'utils/ticketUserMap.json');
-const ARCHIVE_CATEGORY_IDS = [
-  '1394825374902390895', // cheater archive example
-  '1394825412114120842', // general archive
-  '1394825437489795133', // appeal archive
-  '1394825454057164850', // kit archive
-  '1394911105427443752', // frivolous archive
-];
 
-client.on('messageCreate', async message => {
-  // Ignore bots or non-DMs
-  if (message.author.bot) return;
-  if (message.channel.type !== 1) return; // DM channel
+// Use the SAME archive IDs you use elsewhere in your bot
+const ARCHIVE_CATEGORY_IDS = {
+  cheater: '1412705818683506724',
+  general: '1412705818683506720',
+  appeal:  '1412705818683506725',
+  kit:     '1412705818683506726',
+  frivolous:'1412705818683506727',
+};
 
-  const userId = message.author.id;
+client.on('messageCreate', async (msg) => {
+  // Only handle user DMs, ignore bots and guild messages
+  if (msg.author.bot || msg.channel.type !== ChannelType.DM) return;
 
+  // Load map
   let userMap = {};
-  if (fs.existsSync(USER_MAP_PATH)) {
-    try {
-      userMap = JSON.parse(fs.readFileSync(USER_MAP_PATH, 'utf8'));
-    } catch {
-      userMap = {};
-    }
-  }
-
-  // Find open ticket for this user
-  const ticketEntry = Object.entries(userMap).find(([ticketId, data]) => data.userId === userId);
-
-if (!ticketEntry) {
   try {
-    await message.reply(
-      "❌ You don't have any active tickets.\nPlease open one in <#1382846021377462272>."
-    );
-  } catch (err) {
-    console.warn('[DM Handler] Failed to reply to user without ticket:', err);
+    userMap = JSON.parse(fs.readFileSync(USER_MAP_PATH, 'utf8'));
+  } catch {
+    userMap = {};
   }
-  return;
-}
 
+  // Find the user's ticket entry, if any
+  const entry = Object.entries(userMap).find(([, data]) => data.userId === msg.author.id);
 
-  const [ticketId, ticketData] = ticketEntry;
+  if (!entry) {
+    await msg.reply("❌ You don't have any active tickets. Please open one in the server to continue.");
+    return;
+  }
 
-  // Fetch the ticket channel
-  const channel = await client.channels.fetch(ticketData.channelId).catch(() => null);
-  if (!channel) return;
+  const [ticketId, data] = entry;
 
-  // Strict check: if channel is archived or closed, prevent DM forwarding
-if (!channel || ARCHIVE_CATEGORY_IDS.includes(channel.parentId) || channel.name.startsWith('closed-')) return;
+  // If already marked closed, stop forwarding
+  if (data.isClosed) {
+    await msg.reply('Your ticket has been closed. Please open a new ticket in the server to continue.');
+    return;
+  }
 
+  // Try to fetch the ticket channel
+  const ch = await client.channels.fetch(data.channelId).catch(() => null);
+  const archivedIds = Object.values(ARCHIVE_CATEGORY_IDS);
 
-  // Forward message content + attachments to ticket channel
-channel.send({
-  content: `**${message.author.username}**: ${message.content}`,
-  files: message.attachments.size > 0 ? [...message.attachments.values()] : []
+  // If channel is missing, archived (by parent), or renamed to archived-*, mark closed and stop
+  if (!ch || archivedIds.includes(ch.parentId) || (ch.name && ch.name.startsWith('archived-'))) {
+    userMap[ticketId] = { ...(userMap[ticketId] || {}), isClosed: true, closedAt: Date.now() };
+    fs.writeFileSync(USER_MAP_PATH, JSON.stringify(userMap, null, 2));
+    await msg.reply('Your ticket has been closed. Please open a new ticket in the server to continue.');
+    return;
+  }
+
+  // Still open → forward DM into the ticket channel
+  await ch.send({
+    content: `**${msg.author.tag}:** ${msg.content || ''}`,
+    files: msg.attachments.size ? [...msg.attachments.values()] : [],
+  });
 });
-});
+
 
 client.once('ready', () => {
   console.log(`✅ Logged in as ${client.user.tag}`);
