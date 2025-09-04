@@ -155,6 +155,32 @@ if (
 await interaction.channel.setParent(archiveCategoryId);
 await interaction.channel.setName(`archived-${archiveTicketId}`).catch(console.error);
 
+// Reset permissions so user is locked out, staff can view, bot can still send
+await interaction.channel.permissionOverwrites.set([
+  {
+    id: interaction.guild.roles.everyone,
+    deny: [PermissionsBitField.Flags.ViewChannel],
+  },
+  {
+    id: userId, // ticket opener
+    deny: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages],
+  },
+  {
+    id: STAFF_ROLE_ID,
+    allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.ReadMessageHistory],
+    deny: [PermissionsBitField.Flags.SendMessages],
+  },
+  {
+    id: interaction.client.user.id, // bot
+    allow: [
+      PermissionsBitField.Flags.ViewChannel,
+      PermissionsBitField.Flags.SendMessages,
+      PermissionsBitField.Flags.ReadMessageHistory,
+    ],
+  },
+]);
+
+
 
 // Fully close (removes buttons & updates embed)
 await fullyCloseTicket(interaction.channel, archiveTicketId);
