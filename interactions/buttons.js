@@ -14,19 +14,19 @@ const fs = require('fs');
 const ticketTypes = require('../utils/ticketConfig');
 
 const CATEGORY_IDS = {
-  general: '1394930042030784533',
-  cheater: '1394930169482842153',
-  unban: '1394930334210064384',
-  kit: '1394930226999595018',
+  general: '1412705818062884899',
+  cheater: '1412705818062884898',
+  unban: '1412705818062884900',
+  kit: '1412705818062884901',
 };
 const ARCHIVE_CATEGORY_IDS = {
-  cheater: '1394814915294007478',
-  general: '1395646902665478204',
-  appeal: '1395646856201240587',
-  kit: '1395646952519237652',
-  frivolous: '1395646998912307240',
+  cheater: '1412705818683506724',
+  general: '1412705818683506720',
+  appeal: '1412705818683506725',
+  kit: '1412705818683506726',
+  frivolous: '1412705818683506727',
 };
-const STAFF_ROLE_ID = '1384325547097849956';
+const STAFF_ROLE_ID = '1412705816670109775';
 const USER_MAP_PATH = path.join(__dirname, '../utils/ticketUserMap.json');
 const { TICKET_BANNER_URL, ICON_URL } = require('../utils/imageAssets');
 
@@ -55,7 +55,7 @@ async function sendUserCloseDM(ticketId, type, userId, archivedType, reason) {
       .setTitle('Your Ticket Has Been Closed')
       .setDescription(`Your ${ticketLabel} ticket has been **closed** and archived to **${archiveLabel}**.\n\n**Ticket ID:** \`${ticketId}\`\n\n**Reason:**\n${reason}`)
       .setColor(0x747f8d)
-      .setFooter({ text: 'Sleepless Support', iconURL: ICON_URL })
+      .setFooter({ text: 'Inferno Support', iconURL: ICON_URL })
       .setImage(TICKET_BANNER_URL)
       .setTimestamp();
     await user.send({ embeds: [embed] });

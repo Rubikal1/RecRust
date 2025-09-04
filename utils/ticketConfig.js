@@ -6,7 +6,7 @@ module.exports = [
     label: 'General Support',
     style: 'Primary', // Changed to blue
     categoryName: 'General Tickets',
-    modalTitle: 'Sleepless – General Support',
+    modalTitle: 'Inferno – General Support',
     fields: [
       {
         customId: 'steamid',
@@ -29,7 +29,7 @@ module.exports = [
     label: 'Cheater Report',
     style: 'Danger', // Red
     categoryName: 'Cheater Reports',
-    modalTitle: 'Sleepless – Cheater Report',
+    modalTitle: 'Inferno – Cheater Report',
     fields: [
       {
         customId: 'steamid',
@@ -66,7 +66,7 @@ module.exports = [
     label: 'Unban Appeal',
     style: 'Secondary', // Gray
     categoryName: 'Unban Appeals',
-    modalTitle: 'Sleepless – Unban Appeal',
+    modalTitle: 'Inferno – Unban Appeal',
     fields: [
       {
         customId: 'steamid',
@@ -96,7 +96,7 @@ module.exports = [
     label: 'Kit Support',
     style: 'Success', // Greensss
     categoryName: 'Kit Support Tickets',
-    modalTitle: 'Sleepless – Kit Support',
+    modalTitle: 'Inferno – Kit Support',
     fields: [
       {
         customId: 'steamid',

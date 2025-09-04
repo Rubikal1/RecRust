@@ -37,7 +37,7 @@ const { TICKET_BANNER_URL, ICON_URL } = require('../utils/imageAssets');
         "Click one of the buttons below and fill out the form to create your ticket."
       )
       .setImage(TICKET_BANNER_URL)
-      .setFooter({ text: "Sleepless Support Panel", iconURL: ICON_URL });
+      .setFooter({ text: "Inferno Support Panel", iconURL: ICON_URL });
 
     // Dynamically build button row from ticketTypes config
     const row = new ActionRowBuilder().addComponents(
