@@ -4,8 +4,11 @@ const path = require('path');
 const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require('discord.js');
 const USER_MAP_PATH = path.join(__dirname, '../utils/ticketUserMap.json');
 const ARCHIVE_CATEGORY_IDS = [
-  '1394825374902390895', '1394825412114120842', '1394825437489795133',
-  '1394825454057164850', '1394911105427443752'
+  '1412705818683506724', // cheater
+  '1412705818683506720', // general
+  '1412705818683506725', // appeal
+  '1412705818683506726', // kit
+  '1412705818683506727'  // frivolous
 ];
 
 module.exports = {

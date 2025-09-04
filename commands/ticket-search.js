@@ -8,15 +8,15 @@ const path = require('path');
 const fs = require('fs');
 
 const USER_MAP_PATH = path.join(__dirname, '../utils/ticketUserMap.json');
-const ICON_URL = 'https://cdn.discordapp.com/attachments/1384324903460929700/1394794912477872128/Sleepless2XDiscord.gif';
+const ICON_URL = 'https://cdn3.mapstr.gg/b83758cf76068a6344f1509100529665.gif';
 
 // These are the archived category IDs
 const ARCHIVE_CATEGORY_IDS = [
-  '1394825374902390895', // cheater
-  '1394825412114120842', // general
-  '1394825437489795133', // appeal
-  '1394825454057164850', // kit
-  '1394911105427443752'  // frivolous
+  '1412705818683506724', // cheater
+  '1412705818683506720', // general
+  '1412705818683506725', // appeal
+  '1412705818683506726', // kit
+  '1412705818683506727'  // frivolous
 ];
 
 function formatTicketLine(ticketId, data, channel, status) {
@@ -82,7 +82,7 @@ module.exports = {
       .setTitle(`Tickets for ${matchType}: ${input}`)
       .setColor(0x3498db)
       .setDescription(resultLines.join('\n'))
-      .setFooter({ text: 'Sleepless.gg Search', iconURL: ICON_URL })
+      .setFooter({ text: 'Inferno Search', iconURL: ICON_URL })
       .setTimestamp();
 
     await interaction.reply({ embeds: [embed], ephemeral: true });
