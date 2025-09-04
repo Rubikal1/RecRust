@@ -132,81 +132,77 @@ async function sendUserCloseDM(ticketId, type, userId, archivedType, reason) {
 
 module.exports = async function handleModal(interaction) {
   if (!interaction.isModalSubmit()) return;
-   // Archive reason modal submit handler
-// Archive reason modal submit handler
+// --- Archive reason modal submit handler (fixed) ---
 if (
   interaction.customId &&
   interaction.customId.startsWith('archive_reason_')
 ) {
   try {
-    // Get type and ticketId
-    const matches = interaction.customId.match(/^archive_reason_([a-z]+)_(\d+)/);
-    if (!matches) return;
-    const [_, archiveType, archiveTicketId] = matches;
+    // 1) Parse type + ticket id from the modal customId
+    const m = /^archive_reason_([a-z]+)_(\d+)$/.exec(interaction.customId);
+    if (!m) return;
+    const archiveType = m[1];
+    const archiveTicketId = m[2];
+
+    // 2) Validate target archive category
     const archiveCategoryId = ARCHIVE_CATEGORY_IDS[archiveType];
     if (!archiveCategoryId) {
       await interaction.reply({ content: `❌ Archive category ID missing.`, ephemeral: true });
       return;
     }
 
-    const reason = interaction.fields.getTextInputValue('archive_reason');
+    // 3) Get reason text
+    const reason = (interaction.fields.getTextInputValue('archive_reason') || '').trim() || 'No reason provided.';
 
-// Move channel to archive category and rename it
-await interaction.channel.setParent(archiveCategoryId);
-await interaction.channel.setName(`archived-${archiveTicketId}`).catch(console.error);
-
-// Reset permissions so user is locked out, staff can view, bot can still send
-await interaction.channel.permissionOverwrites.set([
-  {
-    id: interaction.guild.roles.everyone,
-    deny: [PermissionsBitField.Flags.ViewChannel],
-  },
-  {
-    id: userId, // ticket opener
-    deny: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages],
-  },
-  {
-    id: STAFF_ROLE_ID,
-    allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.ReadMessageHistory],
-    deny: [PermissionsBitField.Flags.SendMessages],
-  },
-  {
-    id: interaction.client.user.id, // bot
-    allow: [
-      PermissionsBitField.Flags.ViewChannel,
-      PermissionsBitField.Flags.SendMessages,
-      PermissionsBitField.Flags.ReadMessageHistory,
-    ],
-  },
-]);
-
-
-
-// Fully close (removes buttons & updates embed)
-await fullyCloseTicket(interaction.channel, archiveTicketId);
-
-    // DM user with reason
+    // 4) Load userMap FIRST so we have targetUserId before we use it
     let userMap = {};
     if (fs.existsSync(USER_MAP_PATH)) {
       try { userMap = JSON.parse(fs.readFileSync(USER_MAP_PATH, 'utf8')); } catch { userMap = {}; }
     }
-    let userId = null;
-    let ticketType = null;
-    if (userMap[archiveTicketId]) {
-      userId = userMap[archiveTicketId].userId;
-      ticketType = userMap[archiveTicketId].type;
+    const entry = userMap[archiveTicketId] || {};
+    const targetUserId = entry.userId || null;     // ✅ declared before use
+    const ticketType   = entry.type   || 'general';
+
+    // 5) Move channel + rename
+    await interaction.channel.setParent(archiveCategoryId).catch(() => {});
+    await interaction.channel.setName(`archived-${archiveTicketId}`).catch(() => {});
+
+    // 6) Mark closed (remove buttons + set Status field)
+    await fullyCloseTicket(interaction.channel, archiveTicketId);
+
+    // 7) Optional but recommended: lock perms after archive
+    //    - user: no view/send
+    //    - staff role: can view & read history, cannot send
+    if (targetUserId) {
+      await interaction.channel.permissionOverwrites.edit(targetUserId, {
+        ViewChannel: false,
+        SendMessages: false,
+      }).catch(() => {});
     }
-    if (userId && ticketType) {
-      await sendUserCloseDM(archiveTicketId, ticketType, userId, archiveType, reason);
+    await interaction.channel.permissionOverwrites.edit(STAFF_ROLE_ID, {
+      ViewChannel: true,
+      ReadMessageHistory: true,
+      SendMessages: false,
+    }).catch(() => {});
+
+    // 8) DM user the closure reason
+    if (targetUserId) {
+      await sendUserCloseDM(archiveTicketId, ticketType, targetUserId, archiveType, reason);
     }
-    await interaction.reply({ content: `✅ Ticket archived to ${archiveType.charAt(0).toUpperCase() + archiveType.slice(1)}. Reason: ${reason}`, ephemeral: true });
-    await interaction.channel.send(`Ticket archived to ${archiveType.charAt(0).toUpperCase() + archiveType.slice(1)} by <@${interaction.user.id}>.\nReason: ${reason}`);
+
+    // 9) Acks
+    const pretty = archiveType.charAt(0).toUpperCase() + archiveType.slice(1);
+    await interaction.reply({ content: `✅ Ticket archived to ${pretty}.`, ephemeral: true });
+    await interaction.channel.send(`Ticket archived to **${pretty}** by <@${interaction.user.id}>.\n**Reason:** ${reason}`);
   } catch (err) {
     console.error('[Modals] Error archiving with reason:', err);
-    await interaction.reply({ content: '❌ Something went wrong archiving.', ephemeral: true });
+    if (!interaction.replied && !interaction.deferred) {
+      await interaction.reply({ content: '❌ Something went wrong archiving.', ephemeral: true });
+    }
   }
   return;
 }
+
 
   if (!interaction.customId.startsWith('modal_')) return;
 
