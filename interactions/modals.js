@@ -163,7 +163,7 @@ if (
     const targetUserId = entry.userId || null;     // ✅ declared before use
     const ticketType   = entry.type   || 'general';
 
-    // 5) Move channel + rename
+    // 5) Move channel + renamff
     await interaction.channel.setParent(archiveCategoryId).catch(() => {});
     await interaction.channel.setName(`archived-${archiveTicketId}`).catch(() => {});
 
