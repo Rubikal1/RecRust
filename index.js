@@ -168,9 +168,10 @@ setInterval(async () => {
   for (const [ticketId, data] of Object.entries(userMap)) {
     const channel = await client.channels.fetch(data.channelId).catch(() => null);
     if (!channel) continue;
+  const archivedIds = Object.values(ARCHIVE_CATEGORY_IDS);
+// Skip archived channels
+if (archivedIds.includes(channel.parentId) || (channel.name && channel.name.startsWith('archived-'))) continue;
 
-    // Skip archived channels
-    if (ARCHIVE_CATEGORY_IDS.includes(channel.parentId)) continue;
 
     // Determine status: Pending via name; Unclaimed via embed text
     const isPending = channel.name.startsWith('pending-');
