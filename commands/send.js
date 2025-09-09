@@ -2,14 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const { SlashCommandBuilder } = require('discord.js');
 const USER_MAP_PATH = path.join(__dirname, '../utils/ticketUserMap.json');
-
-const ARCHIVE_CATEGORY_IDS = [
-  '1412705818683506724', // cheater
-  '1412705818683506720', // general
-  '1412705818683506725', // appeal
-  '1412705818683506726', // kit
-  '1412705818683506727' // frivolous
-];
+const { ARCHIVE_CATEGORY_IDS } = require('../utils/constants');
 
 module.exports = {
   data: new SlashCommandBuilder()

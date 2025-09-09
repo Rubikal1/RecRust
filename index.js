@@ -1,8 +1,8 @@
 const { Client, GatewayIntentBits, Partials, Collection, ChannelType } = require('discord.js');
-
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
+const { ARCHIVE_CATEGORY_IDS, STAFF_ROLE_ID } = require('./utils/constants');
 
 const client = new Client({
   intents: [
@@ -73,15 +73,6 @@ client.on('interactionCreate', async interaction => {
 // --- Forward user DMs to their open ticket channel ---
 const USER_MAP_PATH = path.join(__dirname, 'utils/ticketUserMap.json');
 
-// Use the SAME archive IDs you use elsewhere in your bot
-const ARCHIVE_CATEGORY_IDS = {
-  cheater: '1412705818683506724',
-  general: '1412705818683506720',
-  appeal:  '1412705818683506725',
-  kit:     '1412705818683506726',
-  frivolous:'1412705818683506727',
-};
-
 client.on('messageCreate', async (msg) => {
   // Only handle user DMs, ignore bots and guild messages
   if (msg.author.bot || msg.channel.type !== ChannelType.DM) return;
@@ -137,7 +128,6 @@ client.once('ready', () => {
 // --- Auto Reminder System for Tickets ---
 const REMINDER_INTERVAL_MS = 60 * 1000; // check every 1 min
 const REM_THRESHOLDS_MS = [5 * 60 * 1000, 30 * 60 * 1000, 60 * 60 * 1000]; // 5m, 30m, 1h
-const STAFF_ROLE_ID = '1384325547097849956';
 
 // Helpers: store reminder stage in channel topic as "[rem:N]"
 function getReminderStageFromTopic(topic) {

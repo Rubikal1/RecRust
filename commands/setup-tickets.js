@@ -7,6 +7,7 @@ const {
 } = require('discord.js');
 const ticketTypes = require('../utils/ticketConfig');
 require('dotenv').config();
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('setup-tickets')
