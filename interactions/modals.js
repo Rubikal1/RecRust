@@ -99,28 +99,4 @@ async function archiveTicket(ticketId) {
   }
 }
 
-// package.json scripts
-{
-  "version": "0.2.0",
-  "configurations": [
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "Launch Discord Bot",
-      "program": "${workspaceFolder}/${input:entryFile}",
-      "envFile": "${workspaceFolder}/.env",
-      "cwd": "${workspaceFolder}"
-    }
-  ],
-  "inputs": [
-    {
-      "type": "pickString",
-      "id": "entryFile",
-      "description": "Select the entry point for your bot",
-      "options": [
-        "index.js",
-        "deploy-commands.js"
-      ]
-    }
-  ]
-}
+// ...existing code...
