@@ -16,7 +16,7 @@ for (const file of commandFiles) {
 }
 
 const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
-const CLIENT_ID = '1412998562723266600'; // Your Bot's Application ID
+const CLIENT_ID = '1415102744590684260'; // Your Bot's Application ID
 
 (async () => {
   try {
