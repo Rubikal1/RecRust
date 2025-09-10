@@ -301,11 +301,22 @@ fs.writeFileSync(USER_MAP_PATH, JSON.stringify(userMap, null, 2));
 
   // --- Save user/channel/type for /send and /ticket-search ---
   try {
+    // Always load or initialize userMap
+    let userMap = {};
+    if (fs.existsSync(USER_MAP_PATH)) {
+      try {
+        const raw = fs.readFileSync(USER_MAP_PATH, 'utf8');
+        userMap = raw.trim() ? JSON.parse(raw) : {};
+      } catch {
+        userMap = {};
+      }
+    }
     userMap[ticketId] = {
       userId: interaction.user.id,
       channelId: channel.id,
       type: typeId,
-      steamid: fieldData.steamid || null
+      steamid: fieldData.steamid || null,
+      createdAt: Date.now()
     };
     fs.writeFileSync(USER_MAP_PATH, JSON.stringify(userMap, null, 2));
     console.log(`[Modal] Saved ticketUserMap entry for ticket ID ${ticketId}`);
