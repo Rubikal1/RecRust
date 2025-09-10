@@ -13,20 +13,8 @@ const path = require('path');
 const fs = require('fs');
 const ticketTypes = require('../utils/ticketConfig');
 
-const CATEGORY_IDS = {
-  general: '1415094996562083906',
-  cheater: '1415094996562083905',
-  unban: '1415094996562083907',
-  kit: '1415094996562083908',
-};
-const ARCHIVE_CATEGORY_IDS = {
-  cheater: '1415094996721336449',
-  general: '1415094996721336448',
-  appeal: '1415094996721336450',
-  kit: '1415094996893438086',
-  frivolous: '1415094996893438087',
-};
-const STAFF_ROLE_ID = '1415094995161059506';
+const { CATEGORY_IDS, ARCHIVE_CATEGORY_IDS, STAFF_ROLE_ID } = require('../utils/constants');
+const ARCHIVE_CATEGORY_IDS_LIST = Object.values(ARCHIVE_CATEGORY_IDS);
 const USER_MAP_PATH = path.join(__dirname, '../utils/ticketUserMap.json');
 const { TICKET_BANNER_URL, ICON_URL } = require('../utils/imageAssets');
 
@@ -155,7 +143,7 @@ module.exports = async function handleButton(interaction) {
   function log(msg) { console.log(`[Button][${ticketId}] ${msg}`); }
 
   const archivedCategories = Object.values(ARCHIVE_CATEGORY_IDS);
-  if (archivedCategories.includes(channel.parentId)) {
+  if (ARCHIVE_CATEGORY_IDS_LIST.includes(channel.parentId)) {
     if (interaction.deferred || interaction.replied) return;
     await interaction.reply({ content: 'This ticket is already closed and archived. No further actions can be taken.', ephemeral: true });
     return;

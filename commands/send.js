@@ -3,13 +3,8 @@ const path = require('path');
 const { SlashCommandBuilder } = require('discord.js');
 const USER_MAP_PATH = path.join(__dirname, '../utils/ticketUserMap.json');
 
-const ARCHIVE_CATEGORY_IDS = [
- '1415094996721336449',
-'1415094996721336448',
-'1415094996721336450',
-'1415094996893438086',
-'1415094996893438087'
-];
+const { ARCHIVE_CATEGORY_IDS, CATEGORY_IDS } = require('../utils/constants');
+const ARCHIVE_CATEGORY_IDS_LIST = Object.values(ARCHIVE_CATEGORY_IDS);
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -26,7 +21,7 @@ module.exports = {
       return interaction.reply({ content: '❌ This command can only be used in a ticket channel.', ephemeral: true });
     }
 
-    if (ARCHIVE_CATEGORY_IDS.includes(channel.parentId)) {
+  if (ARCHIVE_CATEGORY_IDS_LIST.includes(channel.parentId)) {
       return interaction.reply({ content: '❌ This ticket is closed or archived. Cannot send message.', ephemeral: true });
     }
 

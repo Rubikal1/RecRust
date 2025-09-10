@@ -12,22 +12,9 @@ const fs = require('fs');
 const path = require('path');
 
 // ---- CONFIG ttt ----
-const STAFF_SERVER_ID = '1415094995161059504';
-const STAFF_CATEGORY_IDS = {
-  general: '1415094996562083906',
-  cheater: '1415094996562083905',
-  unban: '1415094996562083907',
-  kit: '1415094996562083908',
-};
-const ARCHIVE_CATEGORY_IDS = {
-  cheater: '1415094996721336449',
-  general: '1415094996721336448',
-  appeal: '1415094996721336450',
-  kit: '1415094996893438086',
-  frivolous: '1415094996893438087',
-};
-
-const STAFF_ROLE_ID = '1415094995161059506';
+const { CATEGORY_IDS, ARCHIVE_CATEGORY_IDS, STAFF_ROLE_ID, STAFF_SERVER_ID } = require('../utils/constants');
+const STAFF_CATEGORY_IDS = CATEGORY_IDS;
+const ARCHIVE_CATEGORY_IDS_LIST = Object.values(ARCHIVE_CATEGORY_IDS);
 const { TICKET_BANNER_URL, ICON_URL } = require('../utils/imageAssets');
 const TICKET_DATA_PATH = path.join(__dirname, '../utils/ticketIdStore.json');
 const USER_MAP_PATH = path.join(__dirname, '../utils/ticketUserMap.json');
@@ -179,7 +166,7 @@ if (
         SendMessages: false,
       }).catch(() => {});
     }
-    await interaction.channel.permissionOverwrites.edit(STAFF_ROLE_ID, {
+  await interaction.channel.permissionOverwrites.edit(STAFF_ROLE, {
       ViewChannel: true,
       ReadMessageHistory: true,
       SendMessages: false,
