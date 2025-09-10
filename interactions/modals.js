@@ -33,10 +33,9 @@ const STATUS_META = {
 };
 
 const TYPE_COLORS = {
-  general: 0x3498db, // blue
-  cheater: 0xed4245, // red
-  unban: 0x747f8d,   // gray
-  kit: 0x2ecc40,     // green
+  cheater: 0xed4245,
+  unban: 0x747f8d,
+  kit: 0x2ecc40,
 };
 
 async function fullyCloseTicket(channel, ticketId) {
@@ -119,47 +118,45 @@ async function sendUserCloseDM(ticketId, type, userId, archivedType, reason) {
 
 module.exports = async function handleModal(interaction) {
   if (!interaction.isModalSubmit()) return;
-// --- Archive reason modal submit handler (fixed) ---
+
 if (
   interaction.customId &&
   interaction.customId.startsWith('archive_reason_')
 ) {
   try {
-    // 1) Parse type + ticket id from the modal customId
+
     const m = /^archive_reason_([a-z]+)_(\d+)$/.exec(interaction.customId);
     if (!m) return;
     const archiveType = m[1];
     const archiveTicketId = m[2];
 
-    // 2) Validate target archive category
+
     const archiveCategoryId = ARCHIVE_CATEGORY_IDS[archiveType];
     if (!archiveCategoryId) {
       await interaction.reply({ content: `❌ Archive category ID missing.`, ephemeral: true });
       return;
     }
 
-    // 3) Get reason text
+
     const reason = (interaction.fields.getTextInputValue('archive_reason') || '').trim() || 'No reason provided.';
 
-    // 4) Load userMap FIRST so we have targetUserId before we use it
+    
     let userMap = {};
     if (fs.existsSync(USER_MAP_PATH)) {
       try { userMap = JSON.parse(fs.readFileSync(USER_MAP_PATH, 'utf8')); } catch { userMap = {}; }
     }
     const entry = userMap[archiveTicketId] || {};
-    const targetUserId = entry.userId || null;     // ✅ declared before use
+    const targetUserId = entry.userId || null;     
     const ticketType   = entry.type   || 'general';
 
-    // 5) Move channel + renamff
+
     await interaction.channel.setParent(archiveCategoryId).catch(() => {});
     await interaction.channel.setName(`archived-${archiveTicketId}`).catch(() => {});
 
-    // 6) Mark closed (remove buttons + set Status field)
+
     await fullyCloseTicket(interaction.channel, archiveTicketId);
 
-    // 7) Optional but recommended: lock perms after archive
-    //    - user: no view/send
-    //    - staff role: can view & read history, cannot send
+
     if (targetUserId) {
       await interaction.channel.permissionOverwrites.edit(targetUserId, {
         ViewChannel: false,
@@ -172,11 +169,11 @@ if (
       SendMessages: false,
     }).catch(() => {});
 
-    // 8) DM user the closure reason
+
     if (targetUserId) {
       await sendUserCloseDM(archiveTicketId, ticketType, targetUserId, archiveType, reason);
     }
-// 8.5) Persist "closed" so DM relay stops forwarding
+
 userMap[archiveTicketId] = {
   ...(userMap[archiveTicketId] || {}),
   isClosed: true,
@@ -185,7 +182,7 @@ userMap[archiveTicketId] = {
 };
 fs.writeFileSync(USER_MAP_PATH, JSON.stringify(userMap, null, 2));
 
-    // 9) Acks
+
     const pretty = archiveType.charAt(0).toUpperCase() + archiveType.slice(1);
     await interaction.reply({ content: `✅ Ticket archived to ${pretty}.`, ephemeral: true });
     await interaction.channel.send(`Ticket archived to **${pretty}** by <@${interaction.user.id}>.\n**Reason:** ${reason}`);
@@ -299,9 +296,7 @@ fs.writeFileSync(USER_MAP_PATH, JSON.stringify(userMap, null, 2));
     return;
   }
 
-  // --- Save user/channel/type for /send and /ticket-search ---
   try {
-    // Always load or initialize userMap
     let userMap = {};
     if (fs.existsSync(USER_MAP_PATH)) {
       try {

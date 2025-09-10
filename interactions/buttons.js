@@ -53,7 +53,7 @@ async function sendUserCloseDM(ticketId, type, userId, archivedType, reason) {
   }
 }
 
-// Utility: Replace or add Status field as first field (with value and emojdi)
+
 function setStatusField(embed, value) {
   if (!embed.data.fields) embed.data.fields = [];
   embed.data.fields = embed.data.fields.filter(f => !f.name.toLowerCase().includes('status'));
@@ -150,7 +150,7 @@ module.exports = async function handleButton(interaction) {
     return;
   }
 
-  // Claim/Unclaim
+
 // Claim/Unclaim
 if (interaction.customId === `claim_${ticketId}` || interaction.customId === `unclaim_${ticketId}`) {
   try {
@@ -160,13 +160,13 @@ if (interaction.customId === `claim_${ticketId}` || interaction.customId === `un
     const claimed = interaction.customId.startsWith('claim_');
     const newName = claimed ? `claimed-${ticketId.toLowerCase()}` : `${ticketId.toLowerCase()}`;
 
-    // Channel rename can be slow or permission-sensitive; wrap it
+
     try {
       await channel.setName(newName);
       log(`Channel renamed to ${newName}`);
     } catch (renameErr) {
       log('Channel rename failed (continuing): ' + renameErr?.message || renameErr);
-      // Continue even if rename fails so the interaction still succeeds
+
     }
 
     // Rebuild the main row reflecting the new state
@@ -189,10 +189,10 @@ if (interaction.customId === `claim_${ticketId}` || interaction.customId === `un
         .setStyle(ButtonStyle.Secondary)
     );
 
-    // Edit the original message after deferring
+
     await interaction.message.edit({ components: [row] }).catch(() => {});
 
-    // Update embed status + assignee
+
     await setClaimStatus(
       channel,
       ticketId,
@@ -205,7 +205,7 @@ if (interaction.customId === `claim_${ticketId}` || interaction.customId === `un
     await channel.send(claimed ? `<@${member.id}> has claimed this ticket!` : `This ticket has now been unclaimed by <@${member.id}>!`);
   } catch (err) {
     log('Error in claim/unclaim: ' + err);
-    // We've already deferred; a reply would error. Nothing else to do here.
+
   }
   return;
 }
@@ -263,7 +263,7 @@ if (interaction.customId === `claim_${ticketId}` || interaction.customId === `un
     return;
   }
 
-  // ARCHIVE CATEGORY PICKED → show reason modal
+
   for (const type of ['cheater', 'general', 'appeal', 'kit', 'frivolous']) {
     if (interaction.customId === `archive_to_${type}_${ticketId}`) {
       try {
