@@ -12,11 +12,23 @@ const {
 const path = require('path');
 const fs = require('fs');
 const ticketTypes = require('../utils/ticketConfig');
-const { CATEGORY_IDS, ARCHIVE_CATEGORY_IDS, STAFF_ROLE_ID } = require('../utils/constants');
+
+const CATEGORY_IDS = {
+  general: '1412705818062884899',
+  cheater: '1412705818062884898',
+  unban: '1412705818062884900',
+  kit: '1412705818062884901',
+};
+const ARCHIVE_CATEGORY_IDS = {
+  cheater: '1415094996721336449',
+  general: '1415094996721336448',
+  appeal: '1415094996721336450',
+  kit: '1415094996893438086',
+  frivolous: '1415094996893438087',
+};
+const STAFF_ROLE_ID = '1415094995161059506';
 const USER_MAP_PATH = path.join(__dirname, '../utils/ticketUserMap.json');
 const { TICKET_BANNER_URL, ICON_URL } = require('../utils/imageAssets');
-
-// Remove any previous definitions of CATEGORY_IDS, ARCHIVE_CATEGORY_IDS, STAFF_ROLE_ID in this file.
 
 const STATUS_META = {
   open:   { emoji: '🟢', text: 'Open' },
@@ -26,7 +38,7 @@ const STATUS_META = {
 };
 
 function getTicketIdFromChannelName(name) {
-  return name.replace(/^(claimed-|pending-|archived-)+/, '');
+  return name.replace(/^(?:claimed-|pending-|archived-)/, '');
 }
 
 
@@ -106,21 +118,6 @@ async function setClaimStatus(channel, ticketId, statusEmoji, statusText, member
   }
 }
 
-// Utility function to update userMap
-function updateUserMap(ticketId, updates) {
-  let userMap = {};
-  if (fs.existsSync(USER_MAP_PATH)) {
-    try {
-      userMap = JSON.parse(fs.readFileSync(USER_MAP_PATH, 'utf8'));
-    } catch {
-      userMap = {};
-    }
-  }
-  if (!userMap[ticketId]) return;
-  Object.assign(userMap[ticketId], updates);
-  fs.writeFileSync(USER_MAP_PATH, JSON.stringify(userMap, null, 2));
-}
-
 module.exports = async function handleButton(interaction) {
   if (!interaction.isButton()) return;
   console.log(`[Button Debug] customId: ${interaction.customId}, channel: ${interaction.channel.name}`);
@@ -168,15 +165,22 @@ module.exports = async function handleButton(interaction) {
 // Claim/Unclaim
 if (interaction.customId === `claim_${ticketId}` || interaction.customId === `unclaim_${ticketId}`) {
   try {
+    // Avoid "Interaction Failed" by acknowledging immediately
     await interaction.deferUpdate();
+
     const claimed = interaction.customId.startsWith('claim_');
     const newName = claimed ? `claimed-${ticketId.toLowerCase()}` : `${ticketId.toLowerCase()}`;
+
+    // Channel rename can be slow or permission-sensitive; wrap it
     try {
       await channel.setName(newName);
       log(`Channel renamed to ${newName}`);
     } catch (renameErr) {
       log('Channel rename failed (continuing): ' + renameErr?.message || renameErr);
+      // Continue even if rename fails so the interaction still succeeds
     }
+
+    // Rebuild the main row reflecting the new state
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId(claimed ? `unclaim_${ticketId}` : `claim_${ticketId}`)
@@ -195,7 +199,11 @@ if (interaction.customId === `claim_${ticketId}` || interaction.customId === `un
         .setLabel('Transfer')
         .setStyle(ButtonStyle.Secondary)
     );
+
+    // Edit the original message after deferring
     await interaction.message.edit({ components: [row] }).catch(() => {});
+
+    // Update embed status + assignee
     await setClaimStatus(
       channel,
       ticketId,
@@ -203,12 +211,12 @@ if (interaction.customId === `claim_${ticketId}` || interaction.customId === `un
       claimed ? "Claimed" : "Open",
       claimed ? member.id : null
     );
+
     log(claimed ? `Ticket claimed by <@${member.id}>` : `Ticket unclaimed by <@${member.id}>`);
     await channel.send(claimed ? `<@${member.id}> has claimed this ticket!` : `This ticket has now been unclaimed by <@${member.id}>!`);
-    // --- Update userMap status ---
-    updateUserMap(ticketId, { status: claimed ? 'claimed' : 'open', assignee: claimed ? member.id : null });
   } catch (err) {
     log('Error in claim/unclaim: ' + err);
+    // We've already deferred; a reply would error. Nothing else to do here.
   }
   return;
 }
@@ -299,7 +307,11 @@ if (interaction.customId === `pending_${ticketId}`) {
   try {
     const newName = `pending-${ticketId.toLowerCase()}`;
     await channel.setName(newName);
+
+    // Update embed "Status" to 🔴 Pending Approval and set Assigned line to Unclaimed
     await setClaimStatus(channel, ticketId, "🔴", "Pending Approval");
+
+    // Rebuild main action row with Pending disabled to prevent spam
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId(`claim_${ticketId}`)
@@ -319,11 +331,12 @@ if (interaction.customId === `pending_${ticketId}`) {
         .setLabel('Transfer')
         .setStyle(ButtonStyle.Secondary)
     );
+
+    // Update the clicked message’s components (not a new ephemeral reply)
     await interaction.update({ components: [row] });
+
     await channel.send(`<@&${STAFF_ROLE_ID}> This ticket is waiting for approval!`);
     log('Pending approval triggered. Channel renamed, embed updated, pending disabled, and staff pinged.');
-    // --- Update userMap status ---
-    updateUserMap(ticketId, { status: 'pending' });
   } catch (err) {
     log('Error in pending approval: ' + err);
     if (!interaction.deferred && !interaction.replied) {
@@ -387,8 +400,6 @@ if (interaction.customId === `pending_${ticketId}`) {
         );
         await interaction.update({ components: [row] });
         await channel.send(`Ticket transferred to ${type.charAt(0).toUpperCase() + type.slice(1)} by <@${member.id}>.`);
-        // --- Update userMap type ---
-        updateUserMap(ticketId, { type });
       } catch (err) {
         if (err.code === 50013) {
           log('Error transferring: Missing Permissions!');

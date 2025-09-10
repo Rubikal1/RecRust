@@ -6,10 +6,18 @@ const {
 } = require('discord.js');
 const path = require('path');
 const fs = require('fs');
-const { ARCHIVE_CATEGORY_IDS } = require('../utils/constants');
 
 const USER_MAP_PATH = path.join(__dirname, '../utils/ticketUserMap.json');
-const ICON_URL = 'https://cdn3.mapstr.gg/b83758cf76068a6344f1509100529665.gif';
+const ICON_URL = 'https://cdn3.mapstr.gg/07fbafb53502931e3416fe9a8b8b734d.png';
+
+// These are the archived category IDs
+const ARCHIVE_CATEGORY_IDS = [
+ '1415094996721336449',
+'1415094996721336448',
+'1415094996721336450',
+'1415094996893438086',
+'1415094996893438087'
+];
 
 function formatTicketLine(ticketId, data, channel, status) {
   return `\n\u200b\n> **Ticket:** \`${ticketId}\`\n> **Type:** ${data.type?.charAt(0).toUpperCase() + data.type?.slice(1) || 'Unknown'}\n> **Channel:** <#${data.channelId}>\n> **Status:** ${status}`;
@@ -64,20 +72,8 @@ module.exports = {
     // 3. Load channel status
     const resultLines = [];
     for (const [ticketId, data] of matches) {
-      let channel = null;
-      let status;
-      try {
-        channel = await interaction.client.channels.fetch(data.channelId);
-        status = await getStatusEmoji(channel);
-      } catch {
-        // Fallback to status field in userMap
-        status = data.status
-          ? (data.status === 'closed' ? '🗄️ Closed' :
-             data.status === 'claimed' ? '🟡 Claimed' :
-             data.status === 'pending' ? '🔴 Pending Approval' :
-             '🟢 Open')
-          : '❓ Unknown';
-      }
+      const channel = await interaction.client.channels.fetch(data.channelId).catch(() => null);
+      const status = await getStatusEmoji(channel);
       resultLines.push(formatTicketLine(ticketId, data, channel, status));
     }
 

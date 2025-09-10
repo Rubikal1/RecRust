@@ -1,13 +1,11 @@
-
-const { CATEGORY_IDS } = require('./constants');
+// utils/ticketConfig.js
 
 module.exports = [
   {
     id: 'general',
     label: 'General Support',
-    style: 'Primary',
+    style: 'Primary', // Changed to blue
     categoryName: 'General Tickets',
-    categoryId: CATEGORY_IDS.general,
     modalTitle: 'Inferno – General Support',
     fields: [
       {
@@ -29,9 +27,8 @@ module.exports = [
   {
     id: 'cheater',
     label: 'Cheater Report',
-    style: 'Danger',
+    style: 'Danger', // Red
     categoryName: 'Cheater Reports',
-    categoryId: CATEGORY_IDS.cheater,
     modalTitle: 'Inferno – Cheater Report',
     fields: [
       {
@@ -67,9 +64,8 @@ module.exports = [
   {
     id: 'unban',
     label: 'Unban Appeal',
-    style: 'Secondary',
+    style: 'Secondary', // Gray
     categoryName: 'Unban Appeals',
-    categoryId: CATEGORY_IDS.unban,
     modalTitle: 'Inferno – Unban Appeal',
     fields: [
       {
@@ -98,9 +94,8 @@ module.exports = [
   {
     id: 'kit',
     label: 'Kit Support',
-    style: 'Success',
+    style: 'Success', // Greensss
     categoryName: 'Kit Support Tickets',
-    categoryId: CATEGORY_IDS.kit,
     modalTitle: 'Inferno – Kit Support',
     fields: [
       {

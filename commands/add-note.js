@@ -2,7 +2,13 @@ const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 const USER_MAP_PATH = path.join(__dirname, '../utils/ticketUserMap.json');
-const { ARCHIVE_CATEGORY_IDS } = require('../utils/constants');
+const ARCHIVE_CATEGORY_IDS = {
+  cheater: '1415094996721336449',
+  general: '1415094996721336448',
+  appeal: '1415094996721336450',
+  kit: '1415094996893438086',
+  frivolous: '1415094996893438087',
+};
 
 module.exports = {
   data: new SlashCommandBuilder()
