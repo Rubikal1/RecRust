@@ -166,7 +166,7 @@ if (
         SendMessages: false,
       }).catch(() => {});
     }
-  await interaction.channel.permissionOverwrites.edit(STAFF_ROLE, {
+  await interaction.channel.permissionOverwrites.edit(STAFF_ROLE_ID, {
       ViewChannel: true,
       ReadMessageHistory: true,
       SendMessages: false,
