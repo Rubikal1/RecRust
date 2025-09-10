@@ -12,7 +12,7 @@ const fs = require('fs');
 const path = require('path');
 
 // ---- CONFIG ttt ----
-const STAFF_SERVER_ID = '1412705816670109773';
+const STAFF_SERVER_ID = '1415094995161059504';
 const STAFF_CATEGORY_IDS = {
   general: '1412705818062884899',
   cheater: '1412705818062884898',
