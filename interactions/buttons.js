@@ -14,10 +14,10 @@ const fs = require('fs');
 const ticketTypes = require('../utils/ticketConfig');
 
 const CATEGORY_IDS = {
-  general: '1412705818062884899',
-  cheater: '1412705818062884898',
-  unban: '1412705818062884900',
-  kit: '1412705818062884901',
+  general: '1415094996562083906',
+  cheater: '1415094996562083905',
+  unban: '1415094996562083907',
+  kit: '1415094996562083908',
 };
 const ARCHIVE_CATEGORY_IDS = {
   cheater: '1415094996721336449',
