@@ -50,7 +50,13 @@ module.exports = {
 ```
 Get these IDs from your Discord server settings.
 
-### 3. (Optional) Customize Ticket Types
+### 3. Add Discord Bot Token
+Edit `.env` to set your discord bot token:
+```js
+TOKEN=<Your Token>
+```
+
+### 4. (Optional) Customize Ticket Types
 Edit `utils/ticketConfig.js` to change ticket types, labels, and modal fields to fit your needs.
 
 ## Getting Started

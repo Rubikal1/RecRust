@@ -6,7 +6,7 @@ module.exports = [
     label: 'General Support',
     style: 'Primary', // Changed to blue
     categoryName: 'General Tickets',
-    modalTitle: 'Inferno – General Support',
+  modalTitle: `${require('./constants').SERVER_NAME} – General Support`,
     fields: [
       {
         customId: 'steamid',
@@ -29,7 +29,7 @@ module.exports = [
     label: 'Cheater Report',
     style: 'Danger', // Red
     categoryName: 'Cheater Reports',
-    modalTitle: 'Inferno – Cheater Report',
+  modalTitle: `${require('./constants').SERVER_NAME} – Cheater Report`,
     fields: [
       {
         customId: 'steamid',
@@ -66,7 +66,7 @@ module.exports = [
     label: 'Unban Appeal',
     style: 'Secondary', // Gray
     categoryName: 'Unban Appeals',
-    modalTitle: 'Inferno – Unban Appeal',
+  modalTitle: `${require('./constants').SERVER_NAME} – Unban Appeal`,
     fields: [
       {
         customId: 'steamid',
@@ -96,7 +96,7 @@ module.exports = [
     label: 'Kit Support',
     style: 'Success', // Greensss
     categoryName: 'Kit Support Tickets',
-    modalTitle: 'Inferno – Kit Support',
+  modalTitle: `${require('./constants').SERVER_NAME} – Kit Support`,
     fields: [
       {
         customId: 'steamid',
