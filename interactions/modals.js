@@ -27,7 +27,7 @@ const ARCHIVE_CATEGORY_IDS = {
   frivolous: '1415094996893438087',
 };
 
-const STAFF_ROLE_ID = '1412705816670109775';
+const STAFF_ROLE_ID = '1415094995161059506';
 const { TICKET_BANNER_URL, ICON_URL } = require('../utils/imageAssets');
 const TICKET_DATA_PATH = path.join(__dirname, '../utils/ticketIdStore.json');
 const USER_MAP_PATH = path.join(__dirname, '../utils/ticketUserMap.json');
