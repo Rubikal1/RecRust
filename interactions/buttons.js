@@ -17,6 +17,7 @@ const { CATEGORY_IDS, ARCHIVE_CATEGORY_IDS, STAFF_ROLE_ID } = require('../utils/
 const ARCHIVE_CATEGORY_IDS_LIST = Object.values(ARCHIVE_CATEGORY_IDS);
 const USER_MAP_PATH = path.join(__dirname, '../utils/ticketUserMap.json');
 const { TICKET_BANNER_URL, ICON_URL } = require('../utils/imageAssets');
+const { SERVER_NAME } = require('../utils/constants');
 
 const STATUS_META = {
   open:   { emoji: '🟢', text: 'Open' },
@@ -43,7 +44,7 @@ async function sendUserCloseDM(ticketId, type, userId, archivedType, reason) {
       .setTitle('Your Ticket Has Been Closed')
       .setDescription(`Your ${ticketLabel} ticket has been **closed** and archived to **${archiveLabel}**.\n\n**Ticket ID:** \`${ticketId}\`\n\n**Reason:**\n${reason}`)
       .setColor(0x747f8d)
-      .setFooter({ text: 'Inferno Support', iconURL: ICON_URL })
+      .setFooter({ text: `${SERVER_NAME} Support`, iconURL: ICON_URL })
       .setImage(TICKET_BANNER_URL)
       .setTimestamp();
     await user.send({ embeds: [embed] });

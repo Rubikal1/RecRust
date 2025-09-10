@@ -6,6 +6,7 @@ const {
   EmbedBuilder,
 } = require('discord.js');
 const ticketTypes = require('../utils/ticketConfig');
+const { SERVER_NAME } = require('../utils/constants');
 require('dotenv').config();
 module.exports = {
   data: new SlashCommandBuilder()
@@ -37,7 +38,7 @@ const { TICKET_BANNER_URL, ICON_URL } = require('../utils/imageAssets');
         "Click one of the buttons below and fill out the form to create your ticket."
       )
       .setImage(TICKET_BANNER_URL)
-      .setFooter({ text: "Inferno Support Panel", iconURL: ICON_URL });
+      .setFooter({ text: `${SERVER_NAME} Support Panel`, iconURL: ICON_URL });
 
     // Dynamically build button row from ticketTypes config
     const row = new ActionRowBuilder().addComponents(

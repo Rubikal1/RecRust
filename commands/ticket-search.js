@@ -9,6 +9,7 @@ const fs = require('fs');
 
 const USER_MAP_PATH = path.join(__dirname, '../utils/ticketUserMap.json');
 const ICON_URL = 'https://cdn3.mapstr.gg/07fbafb53502931e3416fe9a8b8b734d.png';
+const { SERVER_NAME } = require('../utils/constants');
 
 // These are the archived category IDs
 const ARCHIVE_CATEGORY_IDS = [
@@ -86,11 +87,11 @@ module.exports = {
 
     // 4. Respond with formatted embed
     const embed = new EmbedBuilder()
-      .setTitle(`Tickets for ${matchType}: ${input}`)
-      .setColor(0x3498db)
-      .setDescription(resultLines.join('\n'))
-      .setFooter({ text: 'Inferno Search', iconURL: ICON_URL })
-      .setTimestamp();
+  .setTitle(`Tickets for ${matchType}: ${input}`)
+  .setColor(0x3498db)
+  .setDescription(resultLines.join('\n'))
+  .setFooter({ text: `${SERVER_NAME} Search`, iconURL: ICON_URL })
+  .setTimestamp();
 
     await interaction.reply({ embeds: [embed], ephemeral: true });
   },

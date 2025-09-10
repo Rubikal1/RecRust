@@ -1,4 +1,5 @@
 module.exports = {
+  SERVER_NAME: 'RecRust',
   CATEGORY_IDS: {
     general: '1415094996562083906',
     cheater: '1415094996562083905',
