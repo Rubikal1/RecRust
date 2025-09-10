@@ -282,25 +282,25 @@ fs.writeFileSync(USER_MAP_PATH, JSON.stringify(userMap, null, 2));
   try {
     staffServer = await interaction.client.guilds.fetch(STAFF_SERVER_ID);
     const staffCategoryId = STAFF_CATEGORY_IDS[typeId === 'appeal' ? 'unban' : typeId] || STAFF_CATEGORY_IDS['general'];
-    channel = await staffServer.channels.create({
-      name: ticketId,
-      type: ChannelType.GuildText,
-      parent: staffCategoryId,
-      permissionOverwrites: [
-        {
-          id: staffServer.roles.everyone,
-          deny: [PermissionsBitField.Flags.ViewChannel],
-        },
-        {
-          id: STAFF_ROLE_ID,
-          allow: [
-            PermissionsBitField.Flags.ViewChannel,
-            PermissionsBitField.Flags.SendMessages,
-            PermissionsBitField.Flags.ReadMessageHistory
-          ],
-        },
-      ],
-    });
+      channel = await staffServer.channels.create({
+        name: ticketId,
+        type: ChannelType.GuildText,
+        parent: staffCategoryId,
+        permissionOverwrites: [
+          {
+            id: staffServer.id, // @everyone role
+            deny: [PermissionsBitField.Flags.ViewChannel],
+          },
+          {
+            id: STAFF_ROLE_ID,
+            allow: [
+              PermissionsBitField.Flags.ViewChannel,
+              PermissionsBitField.Flags.SendMessages,
+              PermissionsBitField.Flags.ReadMessageHistory
+            ],
+          },
+        ],
+      });
     console.log(`[Modal] Created ticket channel '${channel.name}' (${channel.id}) in Staff server, category ${staffCategoryId}`);
   } catch (err) {
     console.error(`[Modal] Error creating ticket channel in Staff server:`, err);
