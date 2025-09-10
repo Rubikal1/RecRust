@@ -52,21 +52,28 @@ module.exports = {
       }
     }
 
-    // 1. Try matching SteamID
-    let matches = Object.entries(userMap).filter(
-      ([, data]) => data.steamid === input
-    );
-
-    let matchType = 'SteamID';
-    // 2. If no steamid matches, try Discord userId
-    if (!matches.length) {
+    // 0. Try matching Ticket ID directly
+    let matches = [];
+    let matchType = '';
+    if (userMap[input]) {
+      matches = [[input, userMap[input]]];
+      matchType = 'Ticket ID';
+    } else {
+      // 1. Try matching SteamID
       matches = Object.entries(userMap).filter(
-        ([, data]) => data.userId === input
+        ([, data]) => data.steamid === input
       );
+      matchType = 'SteamID';
+      // 2. If no steamid matches, try Discord userId
       if (!matches.length) {
-        return interaction.reply({ content: `No tickets found for \`${input}\`.`, ephemeral: true });
+        matches = Object.entries(userMap).filter(
+          ([, data]) => data.userId === input
+        );
+        if (!matches.length) {
+          return interaction.reply({ content: `No tickets found for \`${input}\`.`, ephemeral: true });
+        }
+        matchType = 'Discord ID';
       }
-      matchType = 'Discord ID';
     }
 
     // 3. Load channel status
